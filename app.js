@@ -31,10 +31,6 @@ app.get('/register', (req, res) => {
     res.render('register');
 })
 
-app.get('/submit', (req, res) => {
-    res.render('submit');
-})
-
 
 app.post("/register", (req,res)=>{
     const newUser = new User({
@@ -48,8 +44,23 @@ app.post("/register", (req,res)=>{
         }else{
             res.render("secrets")
         }
+    })  
+})
+
+app.post("/login", (req,res)=>{
+    const email = req.body.username;
+    const password = req.body.password;
+
+    User.findOne({email: email}, (err, result)=>{
+        if(!err){
+            if(result.password === password){
+                res.render("secrets");
+            }
+        }
+        else{
+            console.log(err);
+        }
     })
-    
 })
 
 app.listen(process.env.PORT || 3000, ()=>{
