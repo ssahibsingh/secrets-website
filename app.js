@@ -1,7 +1,10 @@
+require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 mongoose.connect("mongodb+srv://admin-exnone:nNone2019@ay-secrets-website.dxwvh.mongodb.net/userDB");
 
@@ -19,8 +22,6 @@ const userSchema = mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 
-
-
 app.get('/', (req, res) => {
     res.render('home');
 })
@@ -32,37 +33,39 @@ app.get('/register', (req, res) => {
 })
 
 
-app.post("/register", (req,res)=>{
-    const newUser = new User({
-        email: req.body.username,
-        password: req.body.password
-    })
+app.post("/register", (req, res) => {
+    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+        const newUser = new User({
+            email: req.body.username,
+            password: hash
+        })
 
-    newUser.save((err)=>{
-        if(err){
-            console.log(err);
-        }else{
-            res.render("secrets")
-        }
-    })  
+        newUser.save((err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.render("secrets")
+            }
+        })
+    })
 })
 
-app.post("/login", (req,res)=>{
+app.post("/login", (req, res) => {
     const email = req.body.username;
     const password = req.body.password;
 
-    User.findOne({email: email}, (err, result)=>{
-        if(!err){
-            if(result.password === password){
+    User.findOne({ email: email }, (err, result) => {
+        if (!err) {
+            if (result.password === password) {
                 res.render("secrets");
             }
         }
-        else{
+        else {
             console.log(err);
         }
     })
 })
 
-app.listen(process.env.PORT || 3000, ()=>{
+app.listen(process.env.PORT || 3000, () => {
     console.log('Successfully Listening');
 })
